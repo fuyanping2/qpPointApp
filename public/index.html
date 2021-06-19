@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+  <meta name="renderer" content="webkit|ie-comp|ie-stand" />
+  <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+  <title>青浦踩点APP</title>
+  <style>
+    .amap-logo {
+      display: none !important;
+    }
+
+    .amap-copyright {
+      opacity: 0 !important;
+    }
+
+    #loading {
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      top: 0;
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <noscript>
+    <strong>We're sorry but viruses doesn't work properly without JavaScript enabled. Please enable it to
+      continue.</strong>
+  </noscript>
+  <img src="./guide.png" alt="" id="loading">
+  <div id="app"></div>
+  <script type="text/javascript"
+    src="https://webapi.amap.com/maps?v=1.4.10&key=501b694597dee961f2d164eb2cdc0965&plugin=AMap.Geocoder,AMap.Geolocation,AMap.PlaceSearch,AMap.ToolBar"></script>
+  <script src="https://webapi.amap.com/ui/1.0/main.js?v=1.0.11"></script>
+</body>
+<script>
+</script>
+
+</html>
