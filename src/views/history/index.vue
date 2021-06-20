@@ -3,7 +3,7 @@
     <van-nav-bar
       title="历史记录"
       right-text="退出"
-      left-text="删除"
+      :left-text="delCheckTip"
       @click-left="onClickDel"
       @click-right="onClickRight"
       fixed
@@ -23,6 +23,8 @@
               :item="item"
               :query="query"
               :index="index"
+              :showDelStation="showDelStation"
+              :showDelCheckbox="showDelCheckbox"
             ></history-com>
           </van-cell>
         </van-list>
@@ -115,11 +117,12 @@ export default {
       finished: false,
       loading: false,
       error: false,
-      showDelStation: false
+      showDelStation: false,
+      showDelCheckbox: false,
+      delCheckTip: '选择删除'
     }
   },
   created () {
-    console.log(this.$route.query, '88888')
     if (!this.$route.query) {
       this.onRefresh()
     }
@@ -127,8 +130,6 @@ export default {
   mounted () {
     this.routerQuery = this.$route.query
     window.addEventListener('scroll', this.scrollToTop)
-
-    // this.onRefresh()
   },
   destroyed () {
     window.removeEventListener('scroll', this.scrollToTop);
@@ -139,7 +140,6 @@ export default {
     if (meta.isFresh || !this.list.length) {//允许刷新操作 或者 主页->详情页->列表页 时，
       this.query.pageNo = 1;//将pageNo更新为初始值
       meta.isFresh = false;
-      console.log(5555)
       // this.getAllData();//请求数据
       this.onRefresh()
     } else {//详情页缓存，跳到之前的高度
@@ -150,7 +150,6 @@ export default {
   },
   //我们需要在当页的钩子函数中，加上操作
   beforeRouteEnter (to, from, next) {
-    console.log(to, from, '77777')
     if (from.path === '/allForm') {
       to.meta.isFresh = true
     } else { //不是从detail页面过来的，需要刷新
@@ -175,13 +174,33 @@ export default {
         }
       })
       this.$fetchDelete('config-station/deleteBatch', { ids: curDelData.join(',') }).then(res => {
-        console.log(res)
         this.$toast(res.message)
         this.onRefresh()
+        this.delCheckTip = '选择删除'
+        this.showDelCheckbox = false
       })
     },
     onClickDel () {
-      this.showDelStation = true
+      // this.showDelStation = true
+      if (this.delCheckTip == '选择删除') {
+        this.showDelCheckbox = true
+        this.delCheckTip = '删除'
+      } else if (this.delCheckTip == '删除') {
+        let curDelData = []
+        this.list.forEach(item => {
+          if (item.checked) {
+            curDelData.push(item.id)
+          }
+        })
+        if (curDelData.length <= 0) {
+          this.delCheckTip = '选择删除'
+          this.showDelCheckbox = false
+          this.$toast('请选择需删除项')
+          return;
+        } else {
+          this.showDelStation = true
+        }
+      }
     },
     Top () {
       var scrolltop = document.documentElement.scrollTop || document.body.scrollTop;
@@ -211,7 +230,6 @@ export default {
         this.list = this.list.concat(res.result.list)
         this.loading = false;
         if (this.list.length >= res.result.total) {
-          console.log(11111)
           this.finished = true;
           return false
         }
@@ -256,7 +274,7 @@ export default {
 .history {
   .van-nav-bar__left {
     left: 0 !important;
-    width: 46px;
+    // width: 46px;
   }
   .van-nav-bar {
     background-color: #3c7efc;

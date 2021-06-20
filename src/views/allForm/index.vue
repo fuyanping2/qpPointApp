@@ -235,6 +235,10 @@
                 type="textarea"
                 placeholder="请添加途径线路"
                 readonly
+                @click="
+                  showAddLine = true
+                  form.lineName = ''
+                "
                 :rules="[{ required: rulesTrueOrFalse, message: '请添加' }]"
               >
               </van-field>
@@ -286,6 +290,10 @@
               :rules="[{ required: false, message: '请输入' }]"
             ></van-field>
           </div>
+          <div class="label-input22">
+            {{ form.lotaction }}
+            <div class="map-box" id="container"></div>
+          </div>
           <div class="submit-btn">
             <van-button block type="info" native-type="submit">提交</van-button>
           </div>
@@ -297,6 +305,16 @@
         :title="dialogDesc.title"
         show-cancel-button
         @confirm="confirmDialog"
+      >
+        <div style="text-align: center; margin-top: 20px; margin-bottom: 20px">
+          {{ dialogDesc.desc }}
+        </div>
+      </van-dialog>
+      <van-dialog
+        v-model="layoutLoacationShow"
+        :title="dialogDesc.title"
+        show-cancel-button
+        @confirm="confirmLocationDialog"
       >
         <div style="text-align: center; margin-top: 20px; margin-bottom: 20px">
           {{ dialogDesc.desc }}
@@ -471,6 +489,11 @@ export default {
       lineNameList: [],
       lineNameShow: false,
       lineNameTip: '',
+
+      curLocation: {}, // 当前地图经纬度
+      myMap: null,
+      marker: null,
+      layoutLoacationShow: false
     }
   },
   created () {
@@ -478,6 +501,7 @@ export default {
     this.getLineNameList()
   },
   mounted () {
+    this.initMap()
     console.log(JSON.parse(sessionStorage.getItem("curStationInfo")), '444444')
     this.realName = localStorage.getItem("realName")
     this.routerQuery = this.$route.query
@@ -512,11 +536,43 @@ export default {
         if (this.form.fileListStr) {
           this.form.fileListStr = JSON.parse(this.form.fileListStr)
         }
+        this.marker.setPosition([Number(this.form.lng), Number(this.form.lat)]); //更新点标记位置
+        this.myMap.setCenter([Number(this.form.lng), Number(this.form.lat)]);
         break;
     }
-
   },
   methods: {
+    initMap () {
+      this.myMap = new AMap.Map('container', {
+        zoom: 16,//级别
+        center: [121.628707, 31.257035],//中心点坐标
+      });
+      this.curLocation = {
+        lng: 121.628707,
+        lat: 31.257035
+      }
+      this.myMap.on('mapmove', mapMove);
+      function mapMove () {
+        logMapinfo();
+      }
+      this.marker = new AMap.Marker({
+        position: new AMap.LngLat(121.628707, 31.257035),   // 经纬度对象，也可以是经纬度构成的一维数组[116.39, 39.9]
+      });
+      this.marker.setMap(this.myMap);
+      let that = this
+      function logMapinfo () {
+        var zoom = that.myMap.getZoom(); //获取当前地图级别
+        var center = that.myMap.getCenter(); //获取当前地图级别
+        console.log(center, center.toString())
+        that.curLocation = {
+          lng: center.lng,
+          lat: center.lat
+        }
+
+        that.marker.setPosition([center.lng, center.lat]); //更新点标记位置
+        console.log(that.curLocation)
+      };
+    },
     // 获取站名列表
     getStationNameList () {
       this.$fetchGet('config-station/stationList').then(res => {
@@ -550,7 +606,6 @@ export default {
     getLineNameList () {
       this.$fetchGet('config-station/routeList').then(res => {
         this.lineNameAllList = res.result
-        console.log(res)
       })
     },
     // 模糊查询线路名
@@ -613,11 +668,9 @@ export default {
     },
     addzdyfacility () {
       this.facilityList.push({ name: '', value: '', isAdd: true })
-      console.log(this.facilityList, '新增')
     },
     clearZdyfacility (item, index) {
       this.facilityList.splice(index, 1)
-      console.log(this.facilityList, '删除')
     },
     confirmAddLineDialog () {
       if (!this.form.lineName) {
@@ -646,12 +699,10 @@ export default {
     beforeRead (val) {
       this.loadingDesc = "上传中"
       this.showimg = true
-      console.log(val, '88888')
       lrz(val.file, {
         quality: 0.4    //自定义使用压缩方式
       })
         .then(rst => {
-          console.log(rst, 'rst')
           //成功时执行
           let formData = new FormData();
           let curImgList = []
@@ -739,6 +790,13 @@ export default {
     },
     // 提交
     onSubmit (values) {
+      this.layoutLoacationShow = true
+      this.dialogDesc = {
+        title: '确认提交站点定位',
+        desc: '确认当前提交站点定位正确吗?若不正确请移动地图，将点位放到正确位置'
+      }
+    },
+    confirmLocationDialog () {
       this.layoutShow = true
       this.dialogDesc = {
         title: '提交表单',
@@ -749,6 +807,8 @@ export default {
     confirmDialog () {
       this.loadingDesc = "提交中"
       this.showimg = true
+      this.form.lng = this.curLocation.lng
+      this.form.lat = this.curLocation.lat
       this.form.checkedBy = this.realName
       this.form.lineNames = this.linesName.join(',')
       this.form.facility = this.facilityList
@@ -757,7 +817,6 @@ export default {
       switch (this.routerQuery.addOrEdit) {
         case '1':
           this.$fetchPost('config-station/import', this.form, 'json').then(res => {
-            console.log(res, '新增')
             this.showimg = false
             this.$toast(res.message)
             sessionStorage.removeItem("rczxobj")
@@ -772,7 +831,6 @@ export default {
           break;
         case '2':
           this.$fetchPost('config-station/udpate', this.form, 'json').then(res => {
-            console.log(res, '修改')
             this.showimg = false
             this.$toast(res.message)
             sessionStorage.removeItem("rczxobj")
@@ -897,6 +955,10 @@ export default {
 }
 </style>
 <style lang="scss">
+.map-box {
+  width: 100%;
+  height: 200px;
+}
 .all-form {
   width: 100%;
   height: 100%;
@@ -999,8 +1061,9 @@ export default {
 
   .service-content {
     padding-top: 46px;
-    padding-bottom: 50px;
-    background: #ebecee;
+    padding-bottom: 80px;
+    // background: #ebecee;
+    background: #fff;
 
     .van-cell {
       padding: 14px 13px;

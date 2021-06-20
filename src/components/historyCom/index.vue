@@ -3,6 +3,7 @@
     <div class="item-content">
       <div class="item-content-top">
         <van-checkbox
+          v-if="showDelCheckbox"
           v-model="item.checked"
           checked-color="#ee0a24"
           shape="square"
@@ -27,7 +28,7 @@ import { Toast } from 'vant';
 export default {
   name: "",
   components: {},
-  props: ['item', 'query', 'index'],
+  props: ['item', 'query', 'index', 'showDelStation', 'showDelCheckbox'],
   data () {
     return {
     }
