@@ -243,26 +243,25 @@ export default {
     },
     onClickRight () {
       this.layoutShow = true
-      this.dialogType = 1
       this.dialogDesc = {
         title: '退出登录',
         desc: '确认退出登录吗？'
       }
     },
     confirmDialog (type) {
-      if (this.dialogType == 1) {
-        this.showimg = true
-        this.$fetchGet('login/logout').then(res => {
-          this.showimg = false
-          if (res = "login") {
-            this.$toast("退出登录成功")
-            localStorage.removeItem("roleCode");
-            this.$router.push("/");
-          } else {
-            this.$toast("退出登录失败")
-          }
-        })
-      }
+      this.showimg = true
+      this.$fetchGet('login/logout').then(res => {
+        this.showimg = false
+        if (res = "login") {
+          this.$toast("退出登录成功")
+          localStorage.removeItem("roleCode");
+          sessionStorage.removeItem('rczxobj')
+          sessionStorage.removeItem('curStationInfo')
+          this.$router.push("/");
+        } else {
+          this.$toast("退出登录失败")
+        }
+      })
     },
     onClickRight () {
       this.layoutShow = true
