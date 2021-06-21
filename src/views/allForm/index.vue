@@ -145,13 +145,7 @@
           </div>
           <div class="label-input">
             <span class="bt" style="color: #f56c6c">*</span>
-            <van-field
-              label="现场设施情况拍照"
-              :readonly="readonly"
-              :rules="[
-                { required: rulesTrueOrFalse, message: '请选择现场设施情况' },
-              ]"
-            >
+            <van-field label="现场设施情况拍照" :readonly="readonly">
               <template #input>
                 <div class="uploader-all-img-wrapper">
                   <div class="img-list-wrapper">
@@ -162,7 +156,7 @@
                       @click.stop="lookBigImg"
                     >
                       <div class="box">
-                        <img :src="item" alt />
+                        <img :src="item" alt @click="lookBigImg" />
                       </div>
                       <div
                         class="icon-wrapper"
@@ -172,24 +166,17 @@
                       </div>
                     </div>
                   </div>
-                  <van-uploader
-                    :after-read="beforeRead"
-                    :max-count="9"
-                    v-model="fileList1"
-                    :preview-image="false"
-                    preview-size="49px"
-                  >
-                    <div class="upload-img-wrapper">
-                      <div class="upload-img">
-                        <img
-                          src="../../assets/image/homeAndForm/icon_add@3x.png"
-                          alt
-                        />
-                      </div>
+                  <div class="upload-img-wrapper">
+                    <div class="upload-img" @click="beforeRead">
+                      <img
+                        src="../../assets/image/homeAndForm/icon_add@3x.png"
+                        alt
+                      />
                     </div>
-                  </van-uploader>
-                </div> </template
-            ></van-field>
+                  </div>
+                </div>
+              </template>
+            </van-field>
           </div>
           <div class="label-input">
             <span class="bt" style="color: #f56c6c">*</span>
@@ -314,6 +301,7 @@
         v-model="layoutLoacationShow"
         :title="dialogDesc.title"
         show-cancel-button
+        @cancel="cancelLocationDialog"
         @confirm="confirmLocationDialog"
       >
         <div style="text-align: center; margin-top: 20px; margin-bottom: 20px">
@@ -473,7 +461,6 @@ export default {
         lng: '',
       },
       fileList: [],
-      fileList1: [],
       realName: '',
       allSelectList: [],
       showAllSelect: false,
@@ -501,8 +488,10 @@ export default {
     this.getLineNameList()
   },
   mounted () {
+    window.getLocation = this.getLocation
+    window.getImage = this.getImage;
+    window.watchBackWXS = this.onClickLeft;
     this.initMap()
-    console.log(JSON.parse(sessionStorage.getItem("curStationInfo")), '444444')
     this.realName = localStorage.getItem("realName")
     this.routerQuery = this.$route.query
     switch (this.routerQuery.addOrEdit) {
@@ -511,10 +500,10 @@ export default {
           let reserveData = JSON.parse(sessionStorage.getItem("rczxobj"))
           this.form = reserveData.form
           this.fileList = reserveData.fileList
-          this.fileList1 = reserveData.fileList1
           this.facilityList = reserveData.facilityList
           this.linesName = reserveData.linesName
         }
+        this.getLocationInfo(' ') // 调用安卓获取经纬度
         break;
       case '2':
         let curHistoryInfo = JSON.parse(sessionStorage.getItem("curStationInfo"))
@@ -532,7 +521,6 @@ export default {
         this.form.facility = this.facilityList
 
         this.fileList = this.form.fileList
-        this.fileList1 = this.form.fileList
         if (this.form.fileListStr) {
           this.form.fileListStr = JSON.parse(this.form.fileListStr)
         }
@@ -542,15 +530,22 @@ export default {
     }
   },
   methods: {
+    //获取安卓返回经纬度
+    getLocation (lat, lon) {
+      this.curLocation = {
+        lng: lon,
+        lat: lat
+      }
+      this.myMap.setCenter([Number(this.curLocation.lng), Number(this.curLocation.lat)]);
+    },
+    //获取安卓返回图片地址
+    getImage (val, row) {
+      this.beforeUploadImg(val)
+    },
     initMap () {
       this.myMap = new AMap.Map('container', {
         zoom: 16,//级别
-        center: [121.628707, 31.257035],//中心点坐标
       });
-      this.curLocation = {
-        lng: 121.628707,
-        lat: 31.257035
-      }
       this.myMap.on('mapmove', mapMove);
       function mapMove () {
         logMapinfo();
@@ -563,14 +558,12 @@ export default {
       function logMapinfo () {
         var zoom = that.myMap.getZoom(); //获取当前地图级别
         var center = that.myMap.getCenter(); //获取当前地图级别
-        console.log(center, center.toString())
         that.curLocation = {
           lng: center.lng,
           lat: center.lat
         }
 
         that.marker.setPosition([center.lng, center.lat]); //更新点标记位置
-        console.log(that.curLocation)
       };
     },
     // 获取站名列表
@@ -695,40 +688,14 @@ export default {
       this.showDelLine = true
       this.setCurName = curItem
     },
-    // 上传前
-    beforeRead (val) {
-      this.loadingDesc = "上传中"
-      this.showimg = true
-      lrz(val.file, {
-        quality: 0.4    //自定义使用压缩方式
-      })
-        .then(rst => {
-          //成功时执行
-          let formData = new FormData();
-          let curImgList = []
-          if (val instanceof Array) {
-            curImgList = curImgList.concat(rst)
-          } else {
-            curImgList.push(rst)
-          }
-          curImgList.map((item) => {
-            //files是后台参数name字段对应值
-            formData.append('files', rst.formData.get("file"));
-          })
-          this.$fetchPostFile('checkPics/import', formData).then(res => {
-            this.beforeUploadImg(res.message)
-            this.showimg = false
-            this.$toast('上传成功')
-
-          }).catch(err => {
-            this.showimg = false
-            this.$toast('上传失败')
-          })
-        }).catch(error => {
-          //失败时执行
-        }).always(() => {
-          //不管成功或失败，都会执行
-        })
+    lookBigImg () {
+      ImagePreview({
+        images: this.fileList,
+        closeable: true
+      });
+    },
+    beforeRead () {
+      this.downPictur('') // 调取安卓相机拍照
     },
     // 整改前图片上传
     beforeUploadImg (val) {
@@ -758,7 +725,6 @@ export default {
         uploadImgList.push(obj)
       })
       this.form.fileListStr = uploadImgList
-      this.fileList1 = urlList
     },
     lookBigImg () {
       ImagePreview({
@@ -790,11 +756,20 @@ export default {
     },
     // 提交
     onSubmit (values) {
-      this.layoutLoacationShow = true
-      this.dialogDesc = {
-        title: '确认提交站点定位',
-        desc: '确认当前提交站点定位正确吗?若不正确请移动地图，将点位放到正确位置'
+      if (this.fileList.length <= 0) {
+        this.$toast("请上传现场设施情况图片")
+        return false;
+      } else {
+        // this.getLocationInfo(' ') // 调用安卓获取经纬度
+        this.layoutLoacationShow = true
+        this.dialogDesc = {
+          title: '确认提交站点定位',
+          desc: '确认当前提交站点定位正确吗?若不正确请移动地图，将点位放到正确位置'
+        }
       }
+    },
+    cancelLocationDialog () {
+      this.layoutLoacationShow = false
     },
     confirmLocationDialog () {
       this.layoutShow = true
@@ -856,7 +831,6 @@ export default {
             routerQuery: this.routerQuery,
             form: this.form,
             fileList: this.fileList,
-            fileList1: this.fileList1,
             facilityList: this.facilityList,
             linesName: this.linesName,
           }
@@ -1061,7 +1035,7 @@ export default {
 
   .service-content {
     padding-top: 46px;
-    padding-bottom: 80px;
+    padding-bottom: 100px;
     // background: #ebecee;
     background: #fff;
 
