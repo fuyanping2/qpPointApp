@@ -172,12 +172,9 @@
                       </div>
                     </div>
                   </div>
-                  <van-uploader
-                    :after-read="beforeRead"
-                    :max-count="9"
-                    v-model="fileList1"
-                    :preview-image="false"
-                    preview-size="49px"
+                  <div
+                    v-if="!form.stationName || !form.dircetion"
+                    @click="clickUpload"
                   >
                     <div class="upload-img-wrapper">
                       <div class="upload-img">
@@ -187,7 +184,25 @@
                         />
                       </div>
                     </div>
-                  </van-uploader>
+                  </div>
+                  <div v-else>
+                    <van-uploader
+                      :after-read="afterRead"
+                      :max-count="9"
+                      v-model="fileList1"
+                      :preview-image="false"
+                      preview-size="49px"
+                    >
+                      <div class="upload-img-wrapper">
+                        <div class="upload-img">
+                          <img
+                            src="../../assets/image/homeAndForm/icon_add@3x.png"
+                            alt
+                          />
+                        </div>
+                      </div>
+                    </van-uploader>
+                  </div>
                 </div> </template
             ></van-field>
           </div>
@@ -644,10 +659,14 @@ export default {
       this.showDelLine = true
       this.setCurName = curItem
     },
-    // 上传前
-    beforeRead (val) {
+    clickUpload () {
+      this.$toast('请输入站名且选择方向再上传图片')
+    },
+    // 上传前文件读取之后
+    afterRead (val) {
       this.loadingDesc = "上传中"
       this.showimg = true
+      let curName = '_' + this.form.stationName + '_' + this.form.dircetion + '.' + val.file.name.split('.')[1]
       lrz(val.file, {
         quality: 0.4    //自定义使用压缩方式
       })
@@ -662,7 +681,7 @@ export default {
           }
           curImgList.map((item) => {
             //files是后台参数name字段对应值
-            formData.append('files', rst.formData.get("file"));
+            formData.append('files', rst.formData.get("file"), curName);
           })
           this.$fetchPostFile('checkPics/import', formData).then(res => {
             this.beforeUploadImg(res.message)
