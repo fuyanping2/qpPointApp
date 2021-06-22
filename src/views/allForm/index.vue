@@ -148,9 +148,7 @@
             <van-field
               label="现场设施情况拍照"
               :readonly="readonly"
-              :rules="[
-                { required: rulesTrueOrFalse, message: '请上传现场设施图片' },
-              ]"
+              :rules="[{ required: false, message: '请上传现场设施图片' }]"
             >
               <template #input>
                 <div class="uploader-all-img-wrapper">
@@ -664,13 +662,15 @@ export default {
     },
     // 上传前文件读取之后
     afterRead (val) {
+      // console.log(val)
       this.loadingDesc = "上传中"
       this.showimg = true
       let curName = '_' + this.form.stationName + '_' + this.form.dircetion + '.' + val.file.name.split('.')[1]
       lrz(val.file, {
-        quality: 0.4    //自定义使用压缩方式
+        quality: 0.25    //自定义使用压缩方式
       })
         .then(rst => {
+          // console.log(rst)
           //成功时执行
           let formData = new FormData();
           let curImgList = []
@@ -752,10 +752,16 @@ export default {
     },
     // 提交
     onSubmit (values) {
-      this.layoutShow = true
-      this.dialogDesc = {
-        title: '提交表单',
-        desc: '确认提交吗?'
+      if (this.fileList && this.fileList.length <= 0) {
+        this.$toast('请上传现场设施图片')
+        return false;
+      } else {
+
+        this.layoutShow = true
+        this.dialogDesc = {
+          title: '提交表单',
+          desc: '确认提交吗?'
+        }
       }
     },
     // 确认提交
