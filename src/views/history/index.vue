@@ -8,6 +8,19 @@
       @click-right="onClickRight"
       fixed
     />
+    <div class="search-wrapper">
+      <van-field
+        v-model="query.stationName"
+        label="站名"
+        placeholder="请输入站名"
+      >
+        <template #button>
+          <van-button size="small" type="primary" @click="searchStationName"
+            >查询</van-button
+          >
+        </template>
+      </van-field>
+    </div>
     <div class="history-list-wrapper" v-if="list && list.length > 0">
       <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
         <van-list
@@ -112,6 +125,7 @@ export default {
       query: {
         pageNo: 1,
         pageSize: 14,
+        stationName: ''
       },
       isLoading: false,
       finished: false,
@@ -221,6 +235,9 @@ export default {
       }
       this.getAllData()
     },
+    searchStationName () {
+      this.onRefresh()
+    },
     getAllData () {
       // this.showimg = true
       this.$fetchGet("config-station/list", this.query).then(res => {
@@ -319,9 +336,30 @@ export default {
     box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.1);
   }
   .van-list {
-    padding-top: 46px;
+    padding-top: 100px;
     padding-bottom: 50px;
     box-sizing: border-box;
+  }
+
+  .search-wrapper {
+    position: fixed;
+    top: 46px;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.1);
+    box-shadow: 1px 3px 7px -3px rgba(0, 0, 0, 0.62);
+    z-index: 10;
+    .van-cell {
+      line-height: 0;
+    }
+    .van-button {
+      height: 25px !important;
+    }
+    .van-field__label {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
   }
 }
 </style>
@@ -336,7 +374,6 @@ export default {
     justify-content: center;
     height: 100%;
   }
-
   .history-list-wrapper1 {
     display: flex;
     flex-direction: column;
