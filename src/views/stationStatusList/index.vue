@@ -1,13 +1,14 @@
 <template>
   <div class="history">
-    <van-nav-bar
-      title="历史记录"
-      right-text="退出"
-      :left-text="delCheckTip"
-      @click-left="onClickDel"
-      @click-right="onClickRight"
-      fixed
-    />
+    <van-nav-bar @click-left="onClickLeft" title="踩点记录表" fixed>
+      <template #left>
+        <img
+          src="../../assets/image/homeAndForm/icon_back@3x.png"
+          alt
+          style="width: 16px; height: 17px"
+        />
+      </template>
+    </van-nav-bar>
     <div class="search-wrapper">
       <van-field
         v-model="query.stationName"
@@ -32,13 +33,11 @@
           offset="100"
         >
           <van-cell v-for="(item, index) in list" :key="index + 't'">
-            <history-com
+            <station-status-com
               :item="item"
               :query="query"
               :index="index"
-              :showDelStation="showDelStation"
-              :showDelCheckbox="showDelCheckbox"
-            ></history-com>
+            ></station-status-com>
           </van-cell>
         </van-list>
       </van-pull-refresh>
@@ -65,16 +64,6 @@
         </template>
       </van-tabbar-item>
     </van-tabbar>
-    <van-dialog
-      v-model="layoutShow"
-      title="退出登录"
-      show-cancel-button
-      @confirm="confirmDialog"
-    >
-      <div style="text-align: center; margin-top: 20px; margin-bottom: 20px">
-        确认退出登录吗？
-      </div>
-    </van-dialog>
     <van-overlay :z-index="30" :show="showimg">
       <div class="wrapperfast">
         <van-loading size="64px" color="#1989fa"></van-loading>
@@ -83,28 +72,16 @@
     <div class="totop" id="totop" @click="Top">
       <img src="../../assets/image/history/fanhuidingbu.png" alt="" />
     </div>
-
-    <!-- 删除站点单子 -->
-    <van-dialog
-      v-model="showDelStation"
-      title="删除"
-      show-cancel-button
-      @confirm="confirmDelStationDialog"
-    >
-      <div style="text-align: center; margin-top: 20px; margin-bottom: 20px">
-        确定删除当前站点吗?
-      </div>
-    </van-dialog>
   </div>
 </template>
 
 <script>
 import { Toast } from 'vant';
-import historyCom from '../../components/historyCom/index'
+import stationStatusCom from '../../components/stationStatusCom/index'
 export default {
-  name: "history",
+  name: "stationStatusList",
   components: {
-    historyCom
+    stationStatusCom
   },
   data () {
     return {
@@ -117,7 +94,6 @@ export default {
         active: require('../../assets/image/homeAndForm/icon_2_pre@3x.png'),
         inactive: require('../../assets/image/homeAndForm/icon_2_nor@3x.png')
       },
-      layoutShow: false,
       conponentsShow: false,
       showimg: false,
       routerQuery: {},
@@ -131,9 +107,6 @@ export default {
       finished: false,
       loading: false,
       error: false,
-      showDelStation: false,
-      showDelCheckbox: false,
-      delCheckTip: '选择删除'
     }
   },
   created () {
@@ -155,11 +128,6 @@ export default {
       this.query.pageNo = 1;//将pageNo更新为初始值
       meta.isFresh = false;
       // this.getAllData();//请求数据
-      if (this.$route.query) {
-        this.query.stationName = this.$route.query.stationName
-      } else {
-        this.query.stationName = ''
-      }
       this.onRefresh()
     } else {//详情页缓存，跳到之前的高度
       this.$nextTick(() => {
@@ -185,41 +153,17 @@ export default {
     next()
   },
   methods: {
-    confirmDelStationDialog () {
-      let curDelData = []
-      this.list.forEach(item => {
-        if (item.checked) {
-          curDelData.push(item.id)
+    // 导航返回
+    onClickLeft () {
+      this.$router.push({
+        path: this.routerQuery.oldPath,
+        query: {
+          curTypeName: this.routerQuery.curTypeName,
+          curType: this.routerQuery.curType,
+          active1: this.routerQuery.active1,
+          page: this.routerQuery.page,
         }
       })
-      this.$fetchDelete('config-station/deleteBatch', { ids: curDelData.join(',') }).then(res => {
-        this.$toast(res.message)
-        this.onRefresh()
-        this.delCheckTip = '选择删除'
-        this.showDelCheckbox = false
-      })
-    },
-    onClickDel () {
-      // this.showDelStation = true
-      if (this.delCheckTip == '选择删除') {
-        this.showDelCheckbox = true
-        this.delCheckTip = '删除'
-      } else if (this.delCheckTip == '删除') {
-        let curDelData = []
-        this.list.forEach(item => {
-          if (item.checked) {
-            curDelData.push(item.id)
-          }
-        })
-        if (curDelData.length <= 0) {
-          this.delCheckTip = '选择删除'
-          this.showDelCheckbox = false
-          this.$toast('请选择需删除项')
-          return;
-        } else {
-          this.showDelStation = true
-        }
-      }
     },
     Top () {
       var scrolltop = document.documentElement.scrollTop || document.body.scrollTop;
@@ -245,10 +189,7 @@ export default {
     },
     getAllData () {
       // this.showimg = true
-      this.$fetchGet("config-station/list", this.query).then(res => {
-        res.result.list.forEach(item => {
-          item.checked = false
-        })
+      this.$fetchGet("station/status", this.query).then(res => {
         this.list = this.list.concat(res.result.list)
         this.loading = false;
         if (this.list.length >= res.result.total) {
@@ -262,13 +203,6 @@ export default {
         this.isLoading = false
         this.loading = false
       })
-    },
-    onClickRight () {
-      this.layoutShow = true
-      this.dialogDesc = {
-        title: '退出登录',
-        desc: '确认退出登录吗？'
-      }
     },
     confirmDialog (type) {
       this.showimg = true
@@ -284,9 +218,6 @@ export default {
           this.$toast("退出登录失败")
         }
       })
-    },
-    onClickRight () {
-      this.layoutShow = true
     },
   }
 };

@@ -35,13 +35,21 @@
                 <div class="sub-title">点击填写表格</div>
               </div>
             </div>
-            <div class="add-form" v-if="index !== 3">
+            <div class="add-form" v-if="index == 0">
               <img
                 class="add"
                 src="../../assets/image/homeAndForm/add@3x.png"
                 alt
               />
               <span>添加</span>
+            </div>
+            <div class="add-form" v-if="index == 1">
+              <img
+                class="add"
+                src="../../assets/image/homeAndForm/add@3x.png"
+                alt
+              />
+              <span>查看</span>
             </div>
           </div>
         </div>
@@ -82,6 +90,10 @@ export default {
       },
       luruForm: [
         {
+          title: '添加踩点记录',
+          imgUrl: require('../../assets/image/homeAndForm/icon_1_2@3x.png'),
+          bgdColor: '#FFD666'
+        }, {
           title: '踩点记录表',
           imgUrl: require('../../assets/image/homeAndForm/icon_1_1@3x.png'),
           bgdColor: '#FFD666'
@@ -102,22 +114,37 @@ export default {
   methods: {
     goBackAllForm (index, item) {
       this.$store.state.homeLoadingImg = true
-      let x = index + 1
       if (sessionStorage.getItem('rczxobj')) {
         let x = JSON.parse(sessionStorage.getItem('rczxobj'))
         if (x.routerQuery.curTypeName != item.title) {
           sessionStorage.removeItem("rczxobj")
         }
       }
-      this.$router.push({
-        path: '/allForm',
-        query: {
-          oldPath: '/home',
-          addOrEdit: 1,
-          curType: x,
-          curTypeName: item.title,
-        }
-      })
+      let curIndex = index + 1
+      switch (index) {
+        case 0:
+          this.$router.push({
+            path: '/allForm',
+            query: {
+              oldPath: '/home',
+              addOrEdit: 1,
+              curType: curIndex,
+              curTypeName: item.title,
+            }
+          })
+          break;
+        case 1:
+          this.$router.push({
+            path: '/stationStatusList',
+            query: {
+              oldPath: '/home',
+              curType: curIndex,
+              curTypeName: item.title,
+            }
+          })
+          break;
+      }
+
     }
   }
 };

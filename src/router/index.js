@@ -29,6 +29,16 @@ const routes = [
       scrollTop: 0,//缓存时，当前页面的高度
     }
   },
+  {
+    path: '/stationStatusList',
+    name: 'stationStatusList',
+    component: () => import('../views/stationStatusList/index.vue'),
+    meta:{
+      keepAlive:true,//需要缓存的页面
+      isFresh:false,//是否刷新页面
+      scrollTop: 0,//缓存时，当前页面的高度
+    }
+  },
 ]
 
 const router = new VueRouter({

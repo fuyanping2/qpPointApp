@@ -13,13 +13,13 @@ module.exports = {
     port: 8088, // 端口号
     open: false, //配置自动启动浏览器
     proxy: {
-      '/qingpubus': {
-        target: "http://101.231.47.117:50020/qingpubus", // 外网 
-        // target: "http://10.1.30.204:50020/qingpubus" // 内网 
-        // target: "http://192.168.1.102:8006/qingpubus", // 本地 
+      '/qingpunew': {
+        target: "http://101.231.47.117:50020/qingpunew", // 外网 
+        // target: "http://10.1.30.204:50020/qingpunew" // 内网 
+        // target: "http://192.168.1.102:8006/qingpunew", // 本地 
         changeOrigin: true,
         pathRewrite: {
-          '^/qingpubus': '/'
+          '^/qingpunew': '/'
         }
       },
     }
