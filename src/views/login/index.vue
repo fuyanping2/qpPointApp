@@ -45,9 +45,11 @@
             <span>记住密码</span>
           </div>
           <div style="margin-top: 49.5px">
-            <van-button round block type="info" native-type="submit"
+            <!-- <van-button round block type="info" native-type="submit"
               >登录</van-button
-            >
+            > -->
+
+            <div @click="nohg">登录</div>
           </div>
         </van-form>
       </div>
@@ -125,10 +127,8 @@ export default {
           this.$toast('登录成功')
           localStorage.setItem("roleCode", res.info.roles[0].code);
           localStorage.setItem("jiPwdChecked", this.jiPwdChecked);
-          // document.cookie = "userId=" + res.info.id;
           document.cookie = "flag=true";
           document.cookie = "user=" + res.info.id;
-          // document.cookie = "userName=" + res.info.roles[0].name;
           this.$router.push({ path: '/home' })
           localStorage.setItem("userAccount", this.username);
           localStorage.setItem("realName", res.info.realName);
@@ -145,6 +145,9 @@ export default {
 
         }
       })
+    },
+    nohg(){
+      this.$router.push({ path: '/home' })
     },
     clickUserName () {
       this.username = ''

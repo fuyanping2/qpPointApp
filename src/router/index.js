@@ -10,6 +10,12 @@ const routes = [
     component: () => import('../views/Home/index.vue')
   },
   {
+    
+    path: '/reformplate',
+    name: 'reformplate',
+    component: () => import('../views/reformplate/index.vue')
+  },
+  {
     path: '/',
     name: 'login',
     component: () => import('../views/login/index.vue')

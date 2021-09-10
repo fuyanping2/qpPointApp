@@ -54,6 +54,12 @@
           <img :src="props.active ? icon.active : icon.inactive" />
         </template>
       </van-tabbar-item>
+      <van-tabbar-item replace to="/reformplate">
+        <span>改造前后</span>
+        <template #icon="props">
+          <img :src="props.active ? icon.active : icon.inactive" />
+        </template>
+      </van-tabbar-item>
       <van-tabbar-item replace to="/history">
         <span>历史</span>
         <template #icon="props">
