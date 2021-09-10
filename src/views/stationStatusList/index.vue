@@ -100,7 +100,7 @@ export default {
       list: [], // 历史列表
       query: {
         pageNo: 1,
-        pageSize: 14,
+        pageSize: 20,
         stationName: ''
       },
       isLoading: false,
