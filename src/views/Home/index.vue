@@ -54,6 +54,13 @@
           <img :src="props.active ? icon.active : icon.inactive" />
         </template>
       </van-tabbar-item>
+        <van-tabbar-item replace to="/reformplate">
+        <span>改造前后</span>
+        <template #icon="props">
+          <img :src="props.active ? icon2.active : icon2.inactive" />
+        </template>
+      </van-tabbar-item>
+
       <van-tabbar-item replace to="/history">
         <span>历史</span>
         <template #icon="props">
@@ -77,6 +84,10 @@ export default {
         inactive: require('../../assets/image/homeAndForm/icon_1_nor@3x.png')
       },
       icon1: {
+        active: require('../../assets/image/homeAndForm/icon_2_pre@3x.png'),
+        inactive: require('../../assets/image/homeAndForm/icon_2_nor@3x.png')
+      },
+       icon2: {
         active: require('../../assets/image/homeAndForm/icon_2_pre@3x.png'),
         inactive: require('../../assets/image/homeAndForm/icon_2_nor@3x.png')
       },

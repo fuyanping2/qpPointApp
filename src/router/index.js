@@ -15,6 +15,11 @@ const routes = [
     component: () => import('../views/login/index.vue')
   },
   {
+    path: '/reformplate',
+    name: 'reformplate',
+    component: () => import('../views/reformplate/index.vue')
+  },
+  {
     path: '/allForm',
     name: 'allForm',
     component: () => import('../views/allForm/index.vue')
