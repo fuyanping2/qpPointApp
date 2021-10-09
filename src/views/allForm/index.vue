@@ -1,5 +1,5 @@
 <template>
-  <div class="all-form">
+  <div class="all-form" @click="clickOutClear">
     <div
       :class="[entyNameShow ? 'service-form service-form1' : 'service-form']"
     >
@@ -16,45 +16,7 @@
       <!-- 表单 -->
       <div class="service-content">
         <van-form @submit="onSubmit" @failed="onFailed">
-          <div class="label-input">
-            <span class="bt" style="color: #f56c6c">*</span>
-            <van-field
-              v-model="form.stationName"
-              label="站名"
-              placeholder="请输入站名"
-              :readonly="readonly"
-              :rules="[{ required: rulesTrueOrFalse, message: '请输入' }]"
-            >
-              <template #button>
-                <div class="qrcode-icon">
-                  <img
-                    src="../../assets/image/homeAndForm/search.png"
-                    @click="changeStationNameList"
-                    alt
-                  />
-                </div>
-              </template>
-            </van-field>
-            <div class="list-wrapper" v-if="stationNameShow">
-              <div
-                class="list"
-                v-if="stationNameList && stationNameList.length > 0"
-              >
-                <div
-                  class="list-item"
-                  v-for="(item, index) in stationNameList"
-                  :key="index + 'q'"
-                  @click="selectStationName(item)"
-                >
-                  {{ item.stationName }}
-                </div>
-              </div>
-              <div class="no-data" v-else>
-                {{ stationNameTip }}
-              </div>
-            </div>
-          </div>
-          <div class="label-input">
+          <div class="label-input label-input-ab">
             <van-field
               v-model="form.stationCode"
               label="站点编号"
@@ -62,19 +24,92 @@
               :readonly="readonly"
               :rules="[{ required: false, message: '请输入' }]"
             >
+              <template #button>
+                <div class="qrcode-icon">
+                  <img
+                    src="../../assets/image/homeAndForm/search.png"
+                    @click="changestationCodeList"
+                    alt
+                  />
+                </div>
+              </template>
             </van-field>
+            <div class="list-wrapper" v-if="stationCodeShow">
+              <div
+                class="list"
+                v-if="stationCodeList && stationCodeList.length > 0"
+              >
+                <div
+                  class="list-item"
+                  v-for="(item, index) in stationCodeList"
+                  :key="index + 'q'"
+                  @click="selectStationName(item)"
+                >
+                  {{ item }}
+                </div>
+              </div>
+              <div class="no-data" v-else>
+                {{ stationCodeTip }}
+              </div>
+            </div>
           </div>
           <div class="label-input">
             <span class="bt" style="color: #f56c6c">*</span>
             <van-field
-              v-model="form.dircetion"
+              v-model="form.stationName"
+              label="站点名称"
+              placeholder="请输入站点名称"
+              :readonly="readonly"
+              :rules="[{ required: rulesTrueOrFalse, message: '请输入' }]"
+            >
+            </van-field>
+          </div>
+          <div class="label-input" v-show="form.stationCode">
+            <span class="bt" style="color: #f56c6c">*</span>
+            <van-field
+              class="form-line-info"
+              name="input"
+              label="线路信息"
+              :readonly="readonly"
+              :rules="[{ required: false, message: '请输入' }]"
+            >
+              <template #input>
+                <div
+                  class="line-info"
+                  v-for="(item, index) in form.routeList"
+                  :key="index"
+                >
+                  {{ item }}
+                  <!-- {{ item.lineName }} 开往 {{ item.directionStation }} -->
+                </div>
+              </template>
+            </van-field>
+          </div>
+          <!-- <div class="label-input">
+            <span class="bt" style="color: #f56c6c">*</span>
+            <van-field
+              class="form-radio"
+              name="radio"
               label="站点方向"
               placeholder="请选择站点方向"
-              readonly
-              :rules="[{ required: rulesTrueOrFalse, message: '请选择' }]"
-              @click="allSelect(2)"
-            ></van-field>
-          </div>
+              :readonly="readonly"
+              :rules="[{ required: true, message: '请输入' }]"
+            >
+              <template #input>
+                <van-radio-group
+                  v-model="form.dircetion"
+                  class="direction-radio"
+                >
+                  <van-radio
+                    :name="iteam"
+                    v-for="(iteam, indexss) in directionList"
+                    :key="indexss"
+                    >路{{ iteam }}</van-radio
+                  >
+                </van-radio-group>
+              </template>
+            </van-field>
+          </div> -->
           <div class="label-input">
             <span class="bt" style="color: #f56c6c">*</span>
             <van-field
@@ -102,74 +137,110 @@
             <van-field
               class="form-radio"
               name="radio"
-              label="是否靠近灯杆"
-              placeholder="请选择是否靠近灯杆"
+              label="是否光伏灯杆"
+              placeholder="请选择是否光伏灯杆"
               :readonly="readonly"
               :rules="[{ required: true, message: '请输入' }]"
             >
               <template #input>
-                <van-radio-group
-                  v-model="form.nearLightPole"
-                  @change="changeNearLightPole"
-                >
+                <van-radio-group v-model="form.photovoltaic">
                   <van-radio
-                    :name="iteam.value"
-                    v-for="(iteam, indexss) in isTrueStatusList"
+                    :name="iteam"
+                    v-for="(iteam, indexss) in isTrueList"
                     :key="indexss"
-                    >{{ iteam.name }}</van-radio
+                    >{{ iteam }}</van-radio
                   >
                 </van-radio-group>
-              </template>
-            </van-field>
-          </div>
-          <div class="label-input" v-if="form.nearLightPole == 1">
-            <span class="bt" style="color: #f56c6c">*</span>
-            <van-field label="灯杆位置距离" :readonly="readonly">
-              <template #input>
-                <div class="input-list input-list-distance">
-                  <div class="item">
-                    <van-field
-                      v-model="form.lightDirection"
-                      label="在路的哪侧"
-                      placeholder="请选择方向"
-                      readonly
-                      :rules="[
-                        { required: rulesTrueOrFalse, message: '请选择' },
-                      ]"
-                      @click="allSelect(5)"
-                    ></van-field>
-                  </div>
-                  <div class="item">
-                    <van-field
-                      v-model="form.distance"
-                      :readonly="readonly"
-                      label="距离"
-                      placeholder="距离"
-                      :rules="[
-                        {
-                          pattern:
-                            routerQuery.addOrEdit == 1 ? pattern3 : pattern1,
-                          required: rulesTrueOrFalse,
-                          message: '请输入',
-                        },
-                      ]"
-                    ></van-field>
-                    米
-                  </div>
-                </div>
               </template>
             </van-field>
           </div>
           <div class="label-input">
             <span class="bt" style="color: #f56c6c">*</span>
             <van-field
-              v-model="form.constructionWay"
+              class="form-radio"
+              name="radio"
+              label="是否有候车厅箱体"
+              placeholder="请选择是否有候车厅箱体"
+              :readonly="readonly"
+              :rules="[{ required: true, message: '请输入' }]"
+            >
+              <template #input>
+                <van-radio-group v-model="form.box">
+                  <van-radio
+                    :name="iteam"
+                    v-for="(iteam, indexss) in isTrueList"
+                    :key="indexss"
+                    >{{ iteam }}</van-radio
+                  >
+                </van-radio-group>
+              </template>
+            </van-field>
+          </div>
+          <div class="label-input">
+            <span class="bt" style="color: #f56c6c">*</span>
+            <van-field
+              class="form-radio"
+              name="radio"
+              label="是否有穿线孔"
+              placeholder="请选择是否有穿线孔"
+              :readonly="readonly"
+              :rules="[{ required: true, message: '请输入' }]"
+            >
+              <template #input>
+                <van-radio-group v-model="form.hole">
+                  <van-radio
+                    :name="iteam"
+                    v-for="(iteam, indexss) in isTrueList"
+                    :key="indexss"
+                    >{{ iteam }}</van-radio
+                  >
+                </van-radio-group>
+              </template>
+            </van-field>
+          </div>
+          <div class="label-input">
+            <span class="bt" style="color: #f56c6c">*</span>
+            <van-field
+              class="form-radio"
+              name="radio"
+              label="是否已改造"
+              placeholder="请选择是否已改造"
+              :readonly="readonly"
+              :rules="[{ required: true, message: '请输入' }]"
+            >
+              <template #input>
+                <van-radio-group v-model="form.existEleBoard">
+                  <van-radio
+                    :name="iteam"
+                    v-for="(iteam, indexss) in isTrueList"
+                    :key="indexss"
+                    >{{ iteam }}</van-radio
+                  >
+                </van-radio-group>
+              </template>
+            </van-field>
+          </div>
+          <div class="label-input">
+            <!-- <span class="bt" style="color: #f56c6c">*</span> -->
+            <van-field
+              class="form-radio"
+              name="radio"
               label="施工方式"
               placeholder="请选择施工方式"
-              readonly
-              :rules="[{ required: rulesTrueOrFalse, message: '请选择' }]"
-              @click="allSelect(4)"
-            ></van-field>
+              :readonly="readonly"
+              :rules="[{ required: false, message: '请输入' }]"
+            >
+              <template #input>
+                <van-radio-group v-model="form.constructionWay">
+                  <van-radio
+                    :name="iteam"
+                    v-for="(iteam, indexss) in shigongfangshi"
+                    :key="indexss"
+                    >{{ iteam }}</van-radio
+                  >
+                </van-radio-group>
+              </template>
+            </van-field>
           </div>
           <div class="label-input">
             <span class="bt" style="color: #f56c6c">*</span>
@@ -259,46 +330,27 @@
               :rules="[{ required: false, message: '请上传站点图片' }]"
             >
               <template #input>
-                <div class="uploader-all-img-wrapper">
-                  <div class="img-list-wrapper">
-                    <div
-                      class="img-item"
-                      v-for="(item, index) in fileList"
-                      :key="index + 'j'"
-                      @click.stop="lookBigImg"
-                    >
-                      <div class="box">
-                        <img :src="item" alt />
-                      </div>
+                <div class="upload-tip">
+                  <div class="uploader-all-img-wrapper">
+                    <div class="img-list-wrapper">
                       <div
-                        class="icon-wrapper"
-                        @click.stop="deleteImgItem(index)"
+                        class="img-item"
+                        v-for="(item, index) in fileList"
+                        :key="index + 'j'"
+                        @click.stop="lookBigImg"
                       >
-                        <img src="../../assets/image/login/x@3x.png" alt />
+                        <div class="box">
+                          <img :src="item" alt />
+                        </div>
+                        <div
+                          class="icon-wrapper"
+                          @click.stop="deleteImgItem(index)"
+                        >
+                          <img src="../../assets/image/login/x@3x.png" alt />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div
-                    v-if="!form.stationName || !form.dircetion"
-                    @click="clickUpload"
-                  >
-                    <div class="upload-img-wrapper">
-                      <div class="upload-img">
-                        <img
-                          src="../../assets/image/homeAndForm/icon_add@3x.png"
-                          alt
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div v-else>
-                    <van-uploader
-                      :after-read="afterRead"
-                      :max-count="9"
-                      v-model="fileList1"
-                      :preview-image="false"
-                      preview-size="49px"
-                    >
+                    <div v-if="!form.stationName" @click="clickUpload">
                       <div class="upload-img-wrapper">
                         <div class="upload-img">
                           <img
@@ -307,10 +359,30 @@
                           />
                         </div>
                       </div>
-                    </van-uploader>
+                    </div>
+                    <div v-else>
+                      <!-- multiple -->
+                      <van-uploader
+                        :after-read="afterRead"
+                        v-model="fileList1"
+                        :preview-image="false"
+                        preview-size="49px"
+                      >
+                        <div class="upload-img-wrapper">
+                          <div class="upload-img">
+                            <img
+                              src="../../assets/image/homeAndForm/icon_add@3x.png"
+                              alt
+                            />
+                          </div>
+                        </div>
+                      </van-uploader>
+                    </div>
                   </div>
-                </div> </template
-            ></van-field>
+                  <span class="tip">注：站点名称、线路牌、全景图片</span>
+                </div>
+              </template>
+            </van-field>
           </div>
           <div class="label-input">
             <van-field
@@ -354,30 +426,6 @@
           >
         </div>
       </van-overlay>
-      <!-- 遮挡情况,车向,是否已建电子站牌 -->
-      <van-popup v-model="showAllSelect" position="bottom">
-        <van-picker
-          show-toolbar
-          :columns="allSelectList"
-          @cancel="showAllSelect = false"
-          @confirm="onConfirmAllSelect"
-        />
-      </van-popup>
-      <!-- <div class="list-wrapper1" v-if="lineNameShow">
-        <div class="list" v-if="lineNameList && lineNameList.length > 0">
-          <div
-            class="list-item"
-            v-for="(item, index) in lineNameList"
-            :key="index + 'q'"
-            @click="selectLineName(item)"
-          >
-            {{ item.routeName }}
-          </div>
-        </div>
-        <div class="no-data" v-else>
-          {{ lineNameTip }}
-        </div>
-      </div> -->
     </div>
   </div>
 </template>
@@ -404,7 +452,7 @@ export default {
       dialogDesc: {},
       loadingDesc: '',
       routerQuery: {},
-      directionList: ['路东', '路南', '路西', '路北'],
+      directionList: ['东', '南', '西', '北'],
       shigongfangshi: ['顶管', '开挖'],
       isTrueList: ['是', '否'],
       isTrueStatusList: [
@@ -422,7 +470,7 @@ export default {
           value: null
         }, {
           name: '立杆',
-          value: null
+          value: 0
         },
         // {
         //   name: '新式立杆',
@@ -446,39 +494,31 @@ export default {
         checkedBy: '',
         stationCode: '',
         stationName: '',
-        dircetion: '',
-        electiric: '',
+        electiric: '否',
+        photovoltaic: '否',
+        box: '是',
+        hole: '是',
+        existEleBoard: '否',
         remark: '',
         fileListStr: [],
         constructionWay: '',
-        nearLightPole: '',
-        lightDirection: '',
-        distance: null,
+        routeList: []
       },
       fileList: [],
       fileList1: [],
       realName: '',
-      allSelectList: [],
-      showAllSelect: false,
-      curAllSelect: null,
 
-      stationNameAllList: [],  // 站名模糊查询
-      stationNameList: [],
-      stationNameShow: false,
-      stationNameTip: '',
-
-
-      lineNameAllList: [],  // 线路名模糊查询
-      lineNameList: [],
-      lineNameTip: '',
+      stationCodeAllList: [],  // 站名模糊查询
+      stationCodeList: [],
+      stationCodeShow: false,
+      stationCodeTip: '',
+      curImgList: []
     }
   },
   created () {
-    this.getStationNameList()
-    this.getLineNameList()
+    this.getstationCodeList()
   },
   mounted () {
-    // console.log(JSON.parse(sessionStorage.getItem("curStationInfo")), '444444')
     this.realName = localStorage.getItem("realName")
     this.routerQuery = this.$route.query
     switch (this.routerQuery.addOrEdit) {
@@ -490,8 +530,16 @@ export default {
           this.fileList1 = reserveData.fileList1
           this.facilityList = reserveData.facilityList
           this.linesName = reserveData.linesName
+          if (this.routerQuery.stationName || this.routerQuery.stationCode) {
+            this.form.stationName = this.routerQuery.stationName
+            this.form.stationCode = this.routerQuery.stationCode
+            this.getStationNameRouteList()
+          }
         } else {
+          console.log(111111)
           this.form.stationName = this.routerQuery.stationName
+          this.form.stationCode = this.routerQuery.stationCode
+          this.getStationNameRouteList()
         }
         break;
       case '2':
@@ -499,28 +547,18 @@ export default {
         this.form = curHistoryInfo
         this.facilityList = JSON.parse(this.form.facility)
         this.form.facility = this.facilityList
-        switch (this.form.nearLightPole) {
-          case '1':
-            this.form.nearLightPole = 1
-            break;
-          case '0':
-            this.form.nearLightPole = 0
-            break;
-        }
         this.fileList = this.form.fileList
         this.fileList1 = this.form.fileList
         if (this.form.fileListStr) {
           this.form.fileListStr = JSON.parse(this.form.fileListStr)
         }
+        this.getStationNameRouteList()
         break;
     }
   },
   methods: {
-    changeNearLightPole (val) {
-      if (val == 0) {
-        this.form.lightDirection = ''
-        this.form.distance = null
-      }
+    changeStationCode () {
+      this.getStationNameRouteList()
     },
     lookBigImg () {
       ImagePreview({
@@ -529,67 +567,66 @@ export default {
       });
     },
     // 获取站名列表
-    getStationNameList () {
-      this.$fetchGet('config-station/stationList').then(res => {
-        this.stationNameAllList = res.result
+    getstationCodeList () {
+      this.$fetchGet('station/code').then(res => {
+        this.stationCodeAllList = res.result
+        this.stationCodeList = res.result
       })
     },
+    clickOutClear () {
+      // this.stationCodeShow = false
+    },
     // 模糊查询站名
-    changeStationNameList () {
-      this.stationNameTip = "正在查询中..."
-      this.stationNameList = []
-      this.stationNameAllList.forEach(item => {
-        if (item.stationName.indexOf(this.form.stationName) != -1) {
-          this.stationNameList.push(item)
+    changestationCodeList () {
+      this.stationCodeTip = "正在查询中..."
+      this.stationCodeList = []
+      var _this = this;
+      // this.stationCodeAllList.forEach(item => {
+      //   if (item.indexOf(_this.form.stationName) != -1) {
+      //     this.stationCodeList.push(item)
+      //   }
+      // })
+      this.stationCodeAllList.map(function (item) {
+
+        if (item.search(_this.form.stationCode) != -1) {
+          _this.stationCodeList.push(item);
         }
-      })
-      if (this.stationNameList.length <= 0) {
-        this.stationNameShow = false
-        this.$toast("该关键字未查到相关站名，请输入站点名称")
+      });
+      console.log(this.stationCodeList)
+      if (this.stationCodeList.length <= 0) {
+        this.stationCodeShow = false
+        this.$toast("该关键字未查到相关站点编码")
       } else {
-        this.stationNameShow = true
+        this.stationCodeShow = true
       }
     },
     // 选择站名
     selectStationName (item) {
-      this.form.stationName = item.stationName
-      this.stationNameShow = false
-    },
-    // 获取线路名列表
-    getLineNameList () {
-      this.$fetchGet('config-station/routeList').then(res => {
-        this.lineNameAllList = res.result
-      })
-    },
-    allSelect (type) {
-      this.showAllSelect = true
-      this.curAllSelect = type
-      switch (type) {
-        case 2: // 车向
-          this.allSelectList = this.directionList
-          break;
-        case 4: // 施工方式
-          this.allSelectList = this.shigongfangshi
-          break;
-        case 5: // 灯杆位置
-          this.allSelectList = this.directionList
-          break;
-      }
-    },
-    onConfirmAllSelect (val) {
-      switch (this.curAllSelect) {
-        case 2: // 车向
-          this.form.dircetion = val
-          break;
-        case 4: // 施工方式
-          this.form.constructionWay = val
-          break;
-        case 5: // 灯杆位置
-          this.form.lightDirection = val
-          break;
+      this.form.stationCode = item
+      this.stationCodeShow = false
+      this.getStationNameRouteList()
 
+    },
+    getStationNameRouteList () {
+      this.form.routeList = []
+      if (this.form.stationCode) {
+        this.loadingDesc = "查询绑定线路中..."
+        this.showimg = true
+        this.$fetchGet("station/status", {
+          pageNo: 1,
+          pageSize: 20,
+          stationCode: this.form.stationCode
+        }).then(res => {
+          this.showimg = false
+          console.log(res.result.list[0].directionStation)
+          this.form.routeList = res.result.list[0].directionStation.split(',')
+          this.form.stationCode = res.result.list[0].code
+          this.form.stationName = res.result.list[0].stationName
+        }).catch(err => {
+          this.showimg = false
+          this.$toast('查询失败')
+        })
       }
-      this.showAllSelect = false
     },
     addzdyfacility () {
       this.facilityList.push({ name: '', value: null, isAdd: true })
@@ -598,14 +635,14 @@ export default {
       this.facilityList.splice(index, 1)
     },
     clickUpload () {
-      this.$toast('请输入站名且选择方向再上传图片')
+      this.$toast('上传图片需填写站点名称')
     },
     // 上传前文件读取之后
     afterRead (val) {
-      // console.log(val)
       this.loadingDesc = "上传中"
       this.showimg = true
-      let curName = '_' + this.form.stationName + '_' + this.form.dircetion + '.' + val.file.name.split('.')[1]
+      console.log(this.form.stationCode)
+      let curName = '_' + this.form.stationName + '_' + this.form.stationCode + '_' + '.' + val.file.name.split('.')[1]
       lrz(val.file, {
         quality: 0.25    //自定义使用压缩方式
       })
@@ -623,6 +660,8 @@ export default {
             //files是后台参数name字段对应值
             formData.append('files', rst.formData.get("file"), curName);
           })
+          formData.append('stationName', this.form.stationName);
+          formData.append('code', this.form.stationCode);
           this.$fetchPostFile('checkPics/import', formData).then(res => {
             this.beforeUploadImg(res.message)
             this.showimg = false
@@ -652,8 +691,10 @@ export default {
     uploadAndDelQuzheng (urlList) {
       let fileListUrlProcess = urlList, fileListUrlProcess1 = []
       fileListUrlProcess.forEach(item => { // 处理提交图片名称,截取图片名称操作
-        var index = item.lastIndexOf("\/");
-        item = item.substring(index + 1, item.length);
+        // var index = item.lastIndexOf("\/");
+        // item = item.substring(index + 1, item.length);
+        var i = item.lastIndexOf("/")
+        var item = item.substr((item.lastIndexOf("/", i - 1)) + 1, item.length)
         fileListUrlProcess1.push(item)
       })
       let obj = {}
@@ -667,6 +708,7 @@ export default {
       })
       this.form.fileListStr = uploadImgList
       this.fileList1 = urlList
+      console.log(this.form.fileListStr)
     },
     // 导航返回
     onClickLeft () {
@@ -712,6 +754,7 @@ export default {
       this.form.facility = this.facilityList
       this.form.fileListStr = JSON.stringify(this.form.fileListStr)
       this.form.facility = JSON.stringify(this.form.facility)
+      console.log(this.form)
       switch (this.routerQuery.addOrEdit) {
         case '1':
           this.$fetchPost('config-station/import', this.form, 'json').then(res => {
@@ -728,7 +771,7 @@ export default {
           })
           break;
         case '2':
-          this.$fetchPost('config-station/udpate', this.form, 'json').then(res => {
+          this.$fetchPost('config-station/update', this.form, 'json').then(res => {
             this.showimg = false
             this.$toast(res.message)
             sessionStorage.removeItem("rczxobj")
@@ -779,6 +822,26 @@ export default {
 </script>
 <style lang="scss">
 .all-form {
+  .form-line-info {
+    .van-field__body {
+      .van-field__control {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        .line-info {
+          margin-bottom: 5px;
+        }
+      }
+    }
+  }
+  .direction-radio {
+    display: flex;
+    flex-wrap: wrap;
+    .van-radio {
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+  }
   .van-nav-bar__left {
     left: 0 !important;
     width: 46px;
@@ -868,31 +931,33 @@ export default {
       height: 100%;
     }
   }
-
-  .list-wrapper {
-    position: absolute;
-    top: 50px;
-    left: 40px;
-    width: 240px;
-    height: 200px;
-    border: 1px solid #999;
-    border-radius: 5px;
-    z-index: 9999;
-    background: #fff;
-    overflow: scroll;
-    .list {
-      .list-item {
-        font-size: 15px;
-        color: #555;
-        padding: 10px;
-        border-bottom: 1px solid #ebedf0;
+  .label-input-ab {
+    position: relative;
+    .list-wrapper {
+      position: absolute;
+      top: 50px;
+      left: 40px;
+      width: 240px;
+      height: 200px;
+      border: 1px solid #999;
+      border-radius: 5px;
+      z-index: 9999;
+      background: #fff;
+      overflow: scroll;
+      .list {
+        .list-item {
+          font-size: 15px;
+          color: #555;
+          padding: 10px;
+          border-bottom: 1px solid #ebedf0;
+        }
       }
-    }
-    .no-data {
-      font-size: 16px;
-      color: #666666;
-      text-align: center;
-      line-height: 200px;
+      .no-data {
+        font-size: 16px;
+        color: #666666;
+        text-align: center;
+        line-height: 200px;
+      }
     }
   }
   .list-wrapper1 {
@@ -921,6 +986,9 @@ export default {
       text-align: center;
       line-height: 200px;
     }
+  }
+  .van-field__button {
+    padding-right: 40px;
   }
   .qrcode-icon {
     display: flex;
@@ -992,78 +1060,85 @@ export default {
           display: flex;
           justify-content: flex-start;
           .van-radio {
-            &:last-child {
-              margin-left: 20px;
-            }
+            margin-right: 10px;
+            // &:last-child {
+            //   margin-left: 20px;
+            // }
           }
         }
       }
-      .uploader-all-img-wrapper {
-        display: flex;
-        justify-content: flex-start;
-        width: 210px;
-        margin-right: 20px;
-        overflow: hidden;
-        overflow-x: scroll;
-        box-sizing: border-box;
-        padding-top: 10px;
-        padding-bottom: 10px;
-        .img-list-wrapper {
+      .upload-tip {
+        .tip {
+          color: #ee0a24;
+          font-size: 14px;
+        }
+        .uploader-all-img-wrapper {
           display: flex;
           justify-content: flex-start;
-          .img-item {
-            position: relative;
-            margin-right: 10px;
-            .box {
-              width: 49px;
-              height: 49px;
-              border: 1px solid #eee;
-              img {
+          width: 210px;
+          margin-right: 20px;
+          overflow: hidden;
+          overflow-x: scroll;
+          box-sizing: border-box;
+          padding-top: 10px;
+          padding-bottom: 10px;
+          .img-list-wrapper {
+            display: flex;
+            justify-content: flex-start;
+            .img-item {
+              position: relative;
+              margin-right: 10px;
+              .box {
                 width: 49px;
                 height: 49px;
+                border: 1px solid #eee;
+                img {
+                  width: 49px;
+                  height: 49px;
+                }
               }
-            }
 
-            .icon-wrapper {
-              position: absolute;
-              top: -10px;
-              right: -5px;
-              img {
-                width: 15px;
-                height: 15px;
+              .icon-wrapper {
+                position: absolute;
+                top: -10px;
+                right: -5px;
+                img {
+                  width: 15px;
+                  height: 15px;
+                }
               }
             }
           }
-        }
-        .upload-img-wrapper {
-          display: flex;
-          justify-content: flex-start;
-          height: 49px;
-          padding-right: 25px;
-          .upload-img {
+          .upload-img-wrapper {
             display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 49px;
+            justify-content: flex-start;
             height: 49px;
-            background: rgba(255, 255, 255, 1);
-            border: 1px solid rgba(170, 170, 170, 1);
-            border-radius: 2px;
-            img {
-              width: 20px;
-              height: 20px;
+            padding-right: 25px;
+            .upload-img {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              width: 49px;
+              height: 49px;
+              background: rgba(255, 255, 255, 1);
+              border: 1px solid rgba(170, 170, 170, 1);
+              border-radius: 2px;
+              img {
+                width: 20px;
+                height: 20px;
+              }
             }
-          }
-          .remark {
-            display: flex;
-            align-items: flex-end;
-            height: 49px;
-            font-size: 12px;
-            line-height: 12px;
-            font-family: PingFang SC;
-            font-weight: 500;
-            color: rgba(153, 153, 153, 1);
-            margin-left: 7px;
+            .remark {
+              display: flex;
+              align-items: flex-end;
+              height: 49px;
+              font-size: 12px;
+              line-height: 12px;
+              font-family: PingFang SC;
+              font-weight: 500;
+              color: rgba(153, 153, 153, 1);
+              margin-left: 7px;
+            }
           }
         }
       }

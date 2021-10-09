@@ -244,8 +244,9 @@ export default {
       this.onRefresh()
     },
     getAllData () {
-      // this.showimg = true
+      this.showimg = true
       this.$fetchGet("config-station/list", this.query).then(res => {
+        this.showimg = false
         res.result.list.forEach(item => {
           item.checked = false
         })
@@ -257,10 +258,12 @@ export default {
         }
         this.query.pageNo++;
       }).catch(error => {
+        this.showimg = false
         this.$toast('加载失败,请重新加载')
       }).finally(() => {
         this.isLoading = false
         this.loading = false
+        this.showimg = false
       })
     },
     onClickRight () {

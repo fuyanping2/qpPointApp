@@ -43,7 +43,7 @@ export default {
           oldPath: '/history',
           addOrEdit: 2,
           id: item.id,
-          page: this.query.pageNo
+          page: this.query.pageNo,
         }
       })
       sessionStorage.setItem('curStationInfo', JSON.stringify(item))

@@ -41,7 +41,8 @@ export default {
               oldPath: '/stationStatusList',
               addOrEdit: 1,
               stationName: item.stationName,
-              page: this.query.pageNo
+              page: this.query.pageNo,
+              stationCode: item.code,
             }
           })
           break;
@@ -50,6 +51,7 @@ export default {
             path: '/history',
             query: {
               stationName: item.stationName,
+              stationCode: item.code,
             }
           })
           break;

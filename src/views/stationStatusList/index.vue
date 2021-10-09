@@ -11,9 +11,9 @@
     </van-nav-bar>
     <div class="search-wrapper">
       <van-field
-        v-model="query.stationName"
-        label="站名"
-        placeholder="请输入站名"
+        v-model="query.stationCode"
+        label="站点编号"
+        placeholder="请输入站点编号"
       >
         <template #button>
           <van-button size="small" type="primary" @click="searchStationName"
@@ -101,7 +101,7 @@ export default {
       query: {
         pageNo: 1,
         pageSize: 20,
-        stationName: ''
+        stationCode: ''
       },
       isLoading: false,
       finished: false,
@@ -188,8 +188,9 @@ export default {
       this.onRefresh()
     },
     getAllData () {
-      // this.showimg = true
+      this.showimg = true
       this.$fetchGet("station/status", this.query).then(res => {
+        this.showimg = false
         this.list = this.list.concat(res.result.list)
         this.loading = false;
         if (this.list.length >= res.result.total) {
@@ -198,10 +199,12 @@ export default {
         }
         this.query.pageNo++;
       }).catch(error => {
+        this.showimg = false
         this.$toast('加载失败,请重新加载')
       }).finally(() => {
         this.isLoading = false
         this.loading = false
+        this.showimg = false
       })
     },
     confirmDialog (type) {

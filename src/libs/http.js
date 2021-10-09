@@ -9,7 +9,7 @@ Vue.use(Toast);
 
 // 创建axios实例
 export const Axios = axios.create({
-  baseURL: "/qingpunew/",
+  baseURL: "/qingpu2/",
   timeout: 60000,
   withCredentials: true // 是否允许带cookie这些
 });
